@@ -36,6 +36,7 @@ contract ticketsale {
     revenue += int256(ticketPrice);
 
     ticketslist[ticketId] =  Tickets(manager,true,false,true);
+    ticketOf[msg.sender] = ticketId;
 
  }
  function getTicketOf(address person) public view returns (uint) {
@@ -49,7 +50,7 @@ contract ticketsale {
    require(ticketslist[ticketId].takes = true,"");
     require(ticketslist[ticketId].takes == true,"you must own a ticket");
 
-    ticketslist[ticketId] =  Tickets(manager,true,true,true);
+    ticketslist[ticketId].beingOffer = true;
  }
  /*function acceptSwap(address partner) public {
  // TODO
@@ -57,23 +58,28 @@ contract ticketsale {
 
 
  function acceptSwap(uint ticketId) public {
-   require(ticketslist[ticketId].takes = true,"");
-   require(ticketslist[5].takes = true,"");
-    require(ticketslist[ticketId].takes == true && ticketslist[5].takes == true,"you must own a ticket");
-    uint prevId = ticketId;
-    ticketslist[ticketId] =  ticketslist[5];
-    ticketslist[5] =  ticketslist[prevId];
+   require(ticketslist[ticketId].takes == true, "You must own a ticket");
+        require(ticketslist[ticketId].beingOffer == true, "Ticket not offered for swap");
+
+        uint partnerTicketId = ticketOf[msg.sender];
+        require(partnerTicketId > 0 && partnerTicketId != ticketId, "Invalid partner ticket");
+
+        Tickets memory temp = ticketslist[partnerTicketId];
+        ticketslist[partnerTicketId] = ticketslist[ticketId];
+        ticketslist[ticketId] = temp;
+
+        ticketslist[partnerTicketId].beingOffer = false;
  }
  function returnTicket(uint ticketId) public{
     require(ticketId >= 0 && ticketId <= tickets,"Invalid Ticket");
-    require(msg.sender==manager, "you are not authorized");
     bytes memory data;
     bool success;
 
-    uint remanderAfterServiceFee = ticketPrice - ((10 * ticketPrice) / 100);
+    uint remanderAfterServiceFee = ticketPrice - ((90 * ticketPrice) / 100);
     address customerReturn = ticketslist[ticketId].ticketowner;
     (success,data) = customerReturn.call{value: remanderAfterServiceFee}("");
     revenue -= int(remanderAfterServiceFee);
-// TODO
+    ticketslist[ticketId] = Tickets(address(0), false, false, false);
+        ticketOf[msg.sender] = 0;
  }
 }
