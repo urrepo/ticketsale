@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+
 pragma solidity ^0.8.17;
 contract ticketsale {
  // <contract_variables>
@@ -7,12 +8,12 @@ contract ticketsale {
   address public manager;
   address public partner;
   int public revenue;
+
   struct Tickets{
     address ticketowner;
     bool isNotavailable;
     bool beingOffer;
     // "takes" is the amount of attempts user has taken
-    int takes;
     bool takes;
   }
   mapping (uint => Tickets) public ticketslist;
@@ -27,16 +28,13 @@ contract ticketsale {
 
  }
  function buyTicket(uint ticketId) public payable {
-    require(ticketId > 0 && ticketId <= tickets && ticketId != 5,"Invalid Ticket");
     require(ticketId >= 0 && ticketId <= tickets && ticketId != 5,"Invalid Ticket");
     require(ticketslist[ticketId].isNotavailable != true, "sorry ticket sold");
-    require(ticketslist[ticketId].takes == 0, "you already own a ticket");
     require(ticketslist[ticketId].takes == false, "you already own a ticket");
     require(msg.value == ticketPrice, "Incorrect payment amount");
 
     revenue += int256(ticketPrice);
 
-    ticketslist[ticketId] =  Tickets(manager,false,false,0);
     ticketslist[ticketId] =  Tickets(manager,true,false,true);
 
  }
@@ -48,11 +46,9 @@ contract ticketsale {
  }*/
 
  function offerSwap(uint ticketId) public {
-    require(ticketslist[ticketId].takes == 0,"you must own a ticket");
    require(ticketslist[ticketId].takes = true,"");
     require(ticketslist[ticketId].takes == true,"you must own a ticket");
 
-    ticketslist[ticketId] =  Tickets(manager,false,true,0);
     ticketslist[ticketId] =  Tickets(manager,true,true,true);
  }
  /*function acceptSwap(address partner) public {
@@ -61,7 +57,6 @@ contract ticketsale {
 
 
  function acceptSwap(uint ticketId) public {
-    require(ticketslist[ticketId].takes == 0 && ticketslist[5].takes == 0,"you must own a ticket");
    require(ticketslist[ticketId].takes = true,"");
    require(ticketslist[5].takes = true,"");
     require(ticketslist[ticketId].takes == true && ticketslist[5].takes == true,"you must own a ticket");
@@ -70,11 +65,11 @@ contract ticketsale {
     ticketslist[5] =  ticketslist[prevId];
  }
  function returnTicket(uint ticketId) public{
-    require(ticketId > 0 && ticketId <= tickets,"Invalid Ticket");
     require(ticketId >= 0 && ticketId <= tickets,"Invalid Ticket");
     require(msg.sender==manager, "you are not authorized");
     bytes memory data;
     bool success;
+
     uint remanderAfterServiceFee = ticketPrice - ((10 * ticketPrice) / 100);
     address customerReturn = ticketslist[ticketId].ticketowner;
     (success,data) = customerReturn.call{value: remanderAfterServiceFee}("");
